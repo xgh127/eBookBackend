@@ -26,6 +26,7 @@ public class OrderItemImp implements OrderItemDao {
     }
 
     public List<OrderItem> queryOneUserShopCart(String username){
+        System.out.println("dao!!!!!!!!!"+orderItemRepository.findUserShopCartItem(username).size());
         return orderItemRepository.findUserShopCartItem(username);
     }
 

@@ -32,7 +32,7 @@ public class OrderServiceImp implements OrderService {
 
     @Autowired
     private BookRepository bookRepository;
-
+//finished
     public OrderItem addOneOrderItemToChart(String username, int bookID, int buynum){
 
         // 获取书的信息
@@ -207,7 +207,7 @@ public class OrderServiceImp implements OrderService {
     }
 
 
-
+//finished
     public List<OrderItem> findAllOrderItemInCart(String username){
         return orderItemDao.queryOneUserShopCart(username);
     }

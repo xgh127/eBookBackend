@@ -35,15 +35,14 @@ public class orderControl {
     // 权限要求：登录用户
     @RequestMapping("/order/addToChart")
     public Msg addToChart(@RequestBody Map<String, String> params){
-        String username = params.get(constant.USERNAME);
 
+        String username = params.get(constant.USERNAME);
         // 拒绝非法的用户添加购物车到他人用户
         JSONObject auth = SessionUtil.getAuth();
         assert auth != null;
         if(!Objects.equals((String) auth.get(constant.USERNAME), username)){
             return MsgUtil.makeMsg(MsgCode.ERROR, MsgUtil.NOT_LOGGED_IN_ERROR_MSG);
         }
-
         // 解析参数
         String bookID = params.get(constant.BOOKID);
         String buynumStr = params.get(constant.SINGLE_ITEM_BUYNUM);
@@ -52,7 +51,6 @@ public class orderControl {
 
         // 交给服务层
         OrderItem resultItem = orderService.addOneOrderItemToChart(username,IDnum,buynum);
-
         // 检查服务层的结果情况如何，正常就返回处理正常的结果，反之报错
         if(resultItem == null)
             return MsgUtil.makeMsg(MsgCode.ERROR, MsgUtil.ADD_TOO_MUCH_TO_SHOPCART);
@@ -100,7 +98,6 @@ public class orderControl {
         if(auth == null || (!Objects.equals((String) auth.get(constant.USERNAME), queryUser))){
             return null;
         }
-
         return orderService.findAllOrderItemInCart(queryUser);
     }
 
