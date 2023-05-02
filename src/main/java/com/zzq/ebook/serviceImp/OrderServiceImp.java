@@ -80,6 +80,9 @@ public class OrderServiceImp implements OrderService {
             return -1;
 
         Book book = bookDao.getOneBookByID(bookID);
+        if (book == null)
+            return -1;
+
         if(refreshedBuynum > book.getInventory())
             return -2;
 

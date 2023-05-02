@@ -32,7 +32,7 @@ import com.zzq.ebook.constant.constant;
  * TODO：任务内容包括:设计测试用例并保存在一个csv文件中，然后编写测试代码，画对应函数的DDPath图，然后在共享文档里填上相应的测试用例
  */
 @ExtendWith(MockitoExtension.class)
-class orderControlTest {
+public class orderControlTest {
 
     @InjectMocks
     private orderControl oc;
