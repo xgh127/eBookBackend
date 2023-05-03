@@ -1,9 +1,11 @@
 package com.zzq.ebook.controller;
 
+import com.zzq.ebook.entity.Order;
 import com.zzq.ebook.entity.OrderItem;
 import com.zzq.ebook.service.OrderService;
 import com.zzq.ebook.utils.message.MsgUtil;
 import com.zzq.ebook.utils.session.SessionUtil;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.junit.jupiter.params.provider.CsvFileSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +24,7 @@ import java.util.Map;
 import com.zzq.ebook.utils.message.MsgCode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.eq;
 import com.zzq.ebook.constant.constant;
 /**
@@ -91,6 +95,7 @@ public class orderControlTest {
 
     @Test
     void refreshShopCartItem() {
+
     }
 
     /**
@@ -133,22 +138,200 @@ public class orderControlTest {
 
     @Test
     void orderMakeFromShopCart() {
+
     }
 
-    @Test
-    void getAllOrderItem() {
+    OrderItem generateRandomOrderItem(){
+        OrderItem testOrderItem = new OrderItem();
+        testOrderItem.setBuynum((int)(Math.random() * 100));
+        testOrderItem.setBookID(1);
+        testOrderItem.setPayprice((int)(Math.random() * 100));
+        testOrderItem.setOrderID((int)(Math.random() * 100));
+        testOrderItem.setBelonguser("user1");
+        testOrderItem.setCreate_Itemtime(new Timestamp(System.currentTimeMillis()));
+        testOrderItem.setStatus(1);
+        return testOrderItem;
     }
 
-    @Test
-    void getAllOrder() {
+    Order generateRandomOrder(){
+        Order testOrder = new Order();
+        testOrder.setOrderID((int)(Math.random() * 100));
+        testOrder.setBelonguser("user1");
+        testOrder.setContactphone("12345678910");
+        testOrder.setDestination("test");
+        testOrder.setReceivername("test");
+        testOrder.setPostalcode("123456");
+        testOrder.setCreate_time(new Timestamp(System.currentTimeMillis()));
+        testOrder.setTotalprice((int)(Math.random() * 100));
+        return testOrder;
     }
 
-    @Test
-    void getUserOrderItem() {
+    /**
+     * 测试购物车查询功能，expect是返回的OrderItem的数量
+     * @param sessionJsonUsername session的用户名，检查是否是用户自己请求自己的数据
+     * @param username  用户名，发起请求的用户的用户名
+     * @param expect   获取的List<OrderItem>的大小，假设orderService能够正常返回user5的购物车orderItem
+     * by Zhang
+     */
+    @ParameterizedTest
+    @CsvFileSource(resources = {"/controller-test-data/getAllOrderItem.csv"})
+    void getAllOrderItem(String sessionJsonUsername, String username,int expect) {
+        // 准备测试数据
+        JSONArray testOrderItemList = new JSONArray();
+        for(int i = 0; i < 10; ++i){
+            testOrderItemList.add(generateRandomOrderItem());
+        }
+        // 模拟SessionUtil.getAuth()的返回值，确保能控制SessionUtil返回给定的值
+        Map<String,String> param = new HashMap<>();
+        int actualSize = 0;
+        param.put("username",username);
+
+        if (sessionJsonUsername.equals("null")) {
+            try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+                //mock模拟getAuth的返回值
+                mock.when(SessionUtil::getAuth).thenReturn(null);
+                assertEquals(expect, actualSize);
+            }
+        } else {
+            try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)){
+                JSONObject authJson = new JSONObject();
+                authJson.put("username", sessionJsonUsername);
+                mock.when(SessionUtil::getAuth).thenReturn(authJson);
+                if (oc.queryChart(param) == null){//如果session内的用户名和请求用户名不一致，会返回null
+                    assertEquals(expect,actualSize);
+                }else{//如果一致，会返回用户的items，然后检查获取到的ItemList内orderItem的数量是否与预期一致
+                    if (sessionJsonUsername == username) {
+                        Mockito.when(orderService.getAllOrderItemWithBook()).thenReturn(testOrderItemList);
+                        JSONArray itemList =oc.getAllOrderItem();
+                        assertEquals(expect, itemList.size());
+                    } else {
+                        assertNull(oc.getAllOrderItem());
+                    }
+                }
+
+            }
+        }
     }
 
-    @Test
-    void getUserOrder() {
+    @ParameterizedTest
+    @CsvFileSource(resources = {"/controller-test-data/getAllOrderItem.csv"})
+    void getAllOrder(String sessionJsonUsername, String username,int expect) {
+        // 准备测试数据
+        JSONArray testOrderList = new JSONArray();
+        for(int i = 0; i < 10; ++i){
+            testOrderList.add(generateRandomOrder());
+        }
+
+        // 模拟SessionUtil.getAuth()的返回值，确保能控制SessionUtil返回给定的值
+        Map<String,String> param = new HashMap<>();
+        int actualSize = 0;
+        param.put("username",username);
+
+        if (sessionJsonUsername.equals("null")) {
+            try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+                //mock模拟getAuth的返回值
+                mock.when(SessionUtil::getAuth).thenReturn(null);
+                assertEquals(expect, actualSize);
+            }
+        } else {
+            try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)){
+                JSONObject authJson = new JSONObject();
+                authJson.put("username", sessionJsonUsername);
+                mock.when(SessionUtil::getAuth).thenReturn(authJson);
+                if (oc.queryChart(param) == null){//如果session内的用户名和请求用户名不一致，会返回null
+                    assertEquals(expect,actualSize);
+                }else{//如果一致，会返回用户的items，然后检查获取到的ItemList内orderItem的数量是否与预期一致
+                    if (sessionJsonUsername == username) {
+                        Mockito.when(orderService.getAllOrder()).thenReturn(testOrderList);
+                        JSONArray itemList =oc.getAllOrder();
+                        assertEquals(expect, itemList.size());
+                    } else {
+                        assertNull(oc.getAllOrder());
+                    }
+                }
+
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = {"/controller-test-data/getAllOrderItem.csv"})
+    void getUserOrderItem(String sessionJsonUsername, String username,int expect) {
+        // 准备测试数据
+        JSONArray testOrderItemList = new JSONArray();
+        for(int i = 0; i < 10; ++i){
+            testOrderItemList.add(generateRandomOrderItem());
+        }
+        // 模拟SessionUtil.getAuth()的返回值，确保能控制SessionUtil返回给定的值
+        Map<String,String> param = new HashMap<>();
+        int actualSize = 0;
+        param.put("username",username);
+
+        if (sessionJsonUsername.equals("null")) {
+            try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+                //mock模拟getAuth的返回值
+                mock.when(SessionUtil::getAuth).thenReturn(null);
+                assertEquals(expect, actualSize);
+            }
+        } else {
+            try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)){
+                JSONObject authJson = new JSONObject();
+                authJson.put("username", sessionJsonUsername);
+                mock.when(SessionUtil::getAuth).thenReturn(authJson);
+                if (oc.queryChart(param) == null){//如果session内的用户名和请求用户名不一致，会返回null
+                    assertEquals(expect,actualSize);
+                }else{//如果一致，会返回用户的items，然后检查获取到的ItemList内orderItem的数量是否与预期一致
+                    if (sessionJsonUsername == username) {
+                        Mockito.when(orderService.getAllOrderItemWithBook()).thenReturn(testOrderItemList);
+                        JSONArray itemList =oc.getUserOrderItem();
+                        assertEquals(expect, itemList.size());
+                    } else {
+                        assertNull(oc.getUserOrderItem());
+                    }
+                }
+
+            }
+        }
+    }
+    @ParameterizedTest
+    @CsvFileSource(resources = {"/controller-test-data/getAllOrderItem.csv"})
+    void getUserOrder(String sessionJsonUsername, String username,int expect) {
+        // 准备测试数据
+        JSONArray testOrderList = new JSONArray();
+        for(int i = 0; i < 10; ++i){
+            testOrderList.add(generateRandomOrder());
+        }
+
+        // 模拟SessionUtil.getAuth()的返回值，确保能控制SessionUtil返回给定的值
+        Map<String,String> param = new HashMap<>();
+        int actualSize = 0;
+        param.put("username",username);
+
+        if (sessionJsonUsername.equals("null")) {
+            try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+                //mock模拟getAuth的返回值
+                mock.when(SessionUtil::getAuth).thenReturn(null);
+                assertEquals(expect, actualSize);
+            }
+        } else {
+            try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)){
+                JSONObject authJson = new JSONObject();
+                authJson.put("username", sessionJsonUsername);
+                mock.when(SessionUtil::getAuth).thenReturn(authJson);
+                if (oc.queryChart(param) == null){//如果session内的用户名和请求用户名不一致，会返回null
+                    assertEquals(expect,actualSize);
+                }else{//如果一致，会返回用户的items，然后检查获取到的ItemList内orderItem的数量是否与预期一致
+                    if (sessionJsonUsername == username) {
+                        Mockito.when(orderService.getUserOrder(username)).thenReturn(testOrderList);
+                        JSONArray itemList =oc.getUserOrder();
+                        assertEquals(expect, itemList.size());
+                    } else {
+                        assertNull(oc.getUserOrder());
+                    }
+                }
+
+            }
+        }
     }
 
     @Test
