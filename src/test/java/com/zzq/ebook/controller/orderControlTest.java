@@ -34,6 +34,7 @@ import com.zzq.ebook.constant.constant;
  * TODO:分锅，除了已经完成测试的addToChart，queryChart函数，从上至下有7个函数，分为3组，2+2+3，分别由3个人完成，
  * TODO：按照姓氏首字母排序，为hhq，lsk，zzq分别负责2+2+3的函数测试
  * TODO：任务内容包括:设计测试用例并保存在一个csv文件中，然后编写测试代码，画对应函数的DDPath图，然后在共享文档里填上相应的测试用例
+ * TODO:UPDATE,画对应函数的数据流图并填写测试用例（用例大概率可以复用DD路径的，主要是填写和画图），分工照旧
  */
 @ExtendWith(MockitoExtension.class)
 public class orderControlTest {
