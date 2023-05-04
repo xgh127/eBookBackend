@@ -68,6 +68,13 @@ class OrderServiceImpTest {
         orderItem.setBuynum(20);
     }
 
+    /**
+     * 测试addOneOrderItemToChart函数
+     * @param username
+     * @param bookID
+     * @param buyNum
+     * by Xu
+     */
     @ParameterizedTest
     @CsvFileSource(resources = {"/serviceImp-test-data/addOneOrderItemToChart-Data.csv"})
     void addOneOrderItemToChart(String username, Integer bookID,Integer buyNum) {
@@ -188,7 +195,12 @@ class OrderServiceImpTest {
         assertEquals(0, res);
     }
 
-
+    /**
+     * 测试函数findAllOrderItemInCart
+     * @param username
+     * @param expect
+     * by Xu
+     */
     @ParameterizedTest
     @CsvFileSource( resources = {"/serviceImp-test-data/findAllOrderItemInCart-Data.csv"})
     void findAllOrderItemInCart(String username,Integer expect) {
