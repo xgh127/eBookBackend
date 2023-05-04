@@ -80,6 +80,9 @@ public class OrderServiceImp implements OrderService {
             return -1;
 
         Book book = bookDao.getOneBookByID(bookID);
+        if (book == null)
+            return -1;
+
         if(refreshedBuynum > book.getInventory())
             return -2;
 
@@ -166,8 +169,10 @@ public class OrderServiceImp implements OrderService {
 
         // 书籍相关的信息 库存检查 超过库存直接返回错误
         Book targetBook = bookDao.getOneBookByID(bookIDGroup[0]);
-        if(targetBook.getInventory() - bookNumGroup[0] <0)
+        if(targetBook.getInventory() - bookNumGroup[0] <0){
             throw new Exception("库存不够");
+        }
+
 
         // 和上面是一样的道理 创建一个Order
         Order newOrder = new Order();
