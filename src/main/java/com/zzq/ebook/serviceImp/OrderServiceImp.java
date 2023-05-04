@@ -62,7 +62,6 @@ public class OrderServiceImp implements OrderService {
         newItem.setBookID(bookID);
         newItem.setBuynum(buynum);
         newItem.setPayprice(itemAllPrice);
-
         // 获取时间戳操作！
         Timestamp timenow = new Timestamp(System.currentTimeMillis());
         newItem.setCreate_Itemtime(timenow);

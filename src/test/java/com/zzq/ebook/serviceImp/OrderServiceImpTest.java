@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,7 +85,11 @@ class OrderServiceImpTest {
             //如果超过容量，返回null
             assertNull(orderService.addOneOrderItemToChart(username,bookID,buyNum));
         }
-        else if (username == "user2"){
+        else if (Objects.equals(username, "user2")){
+            //如果购物车里面没有这本书，返回一个新的orderItem
+            System.out.println("user2");
+            Mockito.when(orderItemDao.checkUserOrderItemByID(username,bookID)).thenReturn(null);
+//            Mockito.when(orderItemDao.addOneOrderItem(orderItem)).thenReturn(orderItem);
             assertNotNull(orderService.addOneOrderItemToChart(username,bookID,buyNum));
         }else {
             Mockito.when(orderItemDao.checkUserOrderItemByID(username,bookID)).thenReturn(orderItem);
