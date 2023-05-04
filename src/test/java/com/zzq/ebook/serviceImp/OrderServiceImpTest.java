@@ -47,13 +47,10 @@ class OrderServiceImpTest {
         orderItem.setItemID(1);
         orderItem.setBookID(1);
         orderItem.setBuynum(20);
-
-
-
     }
 
     @ParameterizedTest
-    @CsvFileSource( resources = {"/serviceImp-test-data/addOneOrderItemToChart-Data.csv"})
+    @CsvFileSource(resources = {"/serviceImp-test-data/addOneOrderItemToChart-Data.csv"})
     void addOneOrderItemToChart(String username, Integer bookID,Integer buyNum) {
         //桩程序，确保返回的book是我们想要的
         Mockito.when(bookDao.getOneBookByID(bookID)).thenReturn(book);
