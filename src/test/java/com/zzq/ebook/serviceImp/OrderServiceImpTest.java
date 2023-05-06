@@ -1,5 +1,6 @@
 package com.zzq.ebook.serviceImp;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zzq.ebook.dao.BookDao;
 import com.zzq.ebook.dao.OrderDao;
 import com.zzq.ebook.dao.OrderItemDao;
@@ -7,6 +8,7 @@ import com.zzq.ebook.entity.Book;
 import com.zzq.ebook.entity.Order;
 import com.zzq.ebook.entity.OrderItem;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,12 +42,13 @@ class OrderServiceImpTest {
     @Mock
     BookDao bookDao;
 
-    List<OrderItem> orderItems =new ArrayList<>(2);
+    List<OrderItem> orderItems = new ArrayList<>(2);
     Book book = new Book();//桩程序的返回值
     OrderItem orderItem = new OrderItem();
+
     @BeforeEach
-    void init(){
-        for(int i = 0; i < 2 ; i++){//随便设的
+    void init() {
+        for (int i = 0; i < 2; i++) {//随便设的
             OrderItem orderItem = new OrderItem();
             orderItem.setItemID(i);
             orderItems.add(orderItem);
@@ -61,34 +64,32 @@ class OrderServiceImpTest {
 
     /**
      * 测试addOneOrderItemToChart函数
+     *
      * @param username
      * @param bookID
-     * @param buyNum
-     * by Xu
+     * @param buyNum   by Xu
      */
     @ParameterizedTest
     @CsvFileSource(resources = {"/serviceImp-test-data/addOneOrderItemToChart-Data.csv"})
-    void addOneOrderItemToChart(String username, Integer bookID,Integer buyNum) {
+    void addOneOrderItemToChart(String username, Integer bookID, Integer buyNum) {
         //桩程序，确保返回的book是我们想要的
         Mockito.when(bookDao.getOneBookByID(bookID)).thenReturn(book);
-        if (buyNum > 100){
+        if (buyNum > 100) {
             //如果超过容量，返回null
-            assertNull(orderService.addOneOrderItemToChart(username,bookID,buyNum));
-        }
-        else if (Objects.equals(username, "user2")){
+            assertNull(orderService.addOneOrderItemToChart(username, bookID, buyNum));
+        } else if (Objects.equals(username, "user2")) {
             //如果购物车里面没有这本书，返回一个新的orderItem
             System.out.println("user2");
-            Mockito.when(orderItemDao.checkUserOrderItemByID(username,bookID)).thenReturn(null);
+            Mockito.when(orderItemDao.checkUserOrderItemByID(username, bookID)).thenReturn(null);
 //            Mockito.when(orderItemDao.addOneOrderItem(orderItem)).thenReturn(orderItem);
-            assertNotNull(orderService.addOneOrderItemToChart(username,bookID,buyNum));
-        }else {
-            Mockito.when(orderItemDao.checkUserOrderItemByID(username,bookID)).thenReturn(orderItem);
-        //如果购物车容量+购买数量大于100，返回null
-            if (orderItem.getBuynum() + buyNum > 100){
-                assertNull(orderService.addOneOrderItemToChart(username,bookID,buyNum));
-            }
-            else {
-                assertNotNull(orderService.addOneOrderItemToChart(username,bookID,buyNum));
+            assertNotNull(orderService.addOneOrderItemToChart(username, bookID, buyNum));
+        } else {
+            Mockito.when(orderItemDao.checkUserOrderItemByID(username, bookID)).thenReturn(orderItem);
+            //如果购物车容量+购买数量大于100，返回null
+            if (orderItem.getBuynum() + buyNum > 100) {
+                assertNull(orderService.addOneOrderItemToChart(username, bookID, buyNum));
+            } else {
+                assertNotNull(orderService.addOneOrderItemToChart(username, bookID, buyNum));
             }
 
         }
@@ -96,39 +97,38 @@ class OrderServiceImpTest {
     }
 
     /**
-     * @param username 购买用户的用户名
-     * @param bookID 购买书的ID
+     * @param username     购买用户的用户名
+     * @param bookID       购买书的ID
      * @param refreshedNum 购物车刷新后的书本的数量
      */
     @ParameterizedTest
-    @CsvFileSource( resources = {"/serviceImp-test-data/editOneOrderItemBUYNUMInChart-Data.csv"})
-    void editOneOrderItemBUYNUMInChart(String username, Integer bookID,Integer refreshedNum) {
+    @CsvFileSource(resources = {"/serviceImp-test-data/editOneOrderItemBUYNUMInChart-Data.csv"})
+    void editOneOrderItemBUYNUMInChart(String username, Integer bookID, Integer refreshedNum) {
         // 模拟书籍查找的结果
-        if (bookID == 1 && username == "user1"){
+        if (bookID == 1 && username == "user1") {
             Mockito.when(bookDao.getOneBookByID(bookID)).thenReturn(book);
         }
         // 模拟购物车查找的结果
-        if (username == "user1" && bookID == 1){
-            Mockito.when(orderItemDao.checkUserOrderItemByID(username,  bookID)).thenReturn(orderItem);
-        }
-        else{
-            Mockito.when(orderItemDao.checkUserOrderItemByID(username,  bookID)).thenReturn(null);
+        if (username == "user1" && bookID == 1) {
+            Mockito.when(orderItemDao.checkUserOrderItemByID(username, bookID)).thenReturn(orderItem);
+        } else {
+            Mockito.when(orderItemDao.checkUserOrderItemByID(username, bookID)).thenReturn(null);
         }
 
         // 模拟刷新购物车里面书本数量的函数
-        int result = orderService.editOneOrderItemBUYNUMInChart(username,bookID,refreshedNum);
-        if (bookID == 1 && username == "user1"){
+        int result = orderService.editOneOrderItemBUYNUMInChart(username, bookID, refreshedNum);
+        if (bookID == 1 && username == "user1") {
             assertEquals(0, result);
         }
-        if (username == "user2"){
+        if (username == "user2") {
             assertEquals(-1, result);
         }
 
-        if (refreshedNum > 100 && username == "user1" && bookID == 1){
+        if (refreshedNum > 100 && username == "user1" && bookID == 1) {
             assertEquals(-2, result);
         }
 
-        if (refreshedNum > 100 && username == "user1" && bookID > 1){
+        if (refreshedNum > 100 && username == "user1" && bookID > 1) {
             assertEquals(-1, result);
         }
 
@@ -145,8 +145,8 @@ class OrderServiceImpTest {
 
     @Test
     void orderMakeFromDirectBuy() {
-        int []bookIDGroup = {1};
-        int []bookNumGroup = {1};
+        int[] bookIDGroup = {1};
+        int[] bookNumGroup = {1};
         String username = "user1";
         String receivename = "test";
         String postcode = "123456";
@@ -183,8 +183,8 @@ class OrderServiceImpTest {
 
         int res = 1;
         try {
-            res = orderService.orderMakeFromDirectBuy(bookIDGroup,bookNumGroup,username,receivename,postcode,phonenumber,receiveaddress,site);
-        }catch (Exception e){
+            res = orderService.orderMakeFromDirectBuy(bookIDGroup, bookNumGroup, username, receivename, postcode, phonenumber, receiveaddress, site);
+        } catch (Exception e) {
             System.out.println(e);
         }
         assertEquals(0, res);
@@ -192,19 +192,20 @@ class OrderServiceImpTest {
 
     /**
      * 测试函数findAllOrderItemInCart
+     *
      * @param username
-     * @param expect
-     * by Xu
+     * @param expect   by Xu
      */
     @ParameterizedTest
-    @CsvFileSource( resources = {"/serviceImp-test-data/findAllOrderItemInCart-Data.csv"})
-    void findAllOrderItemInCart(String username,Integer expect) {
+    @CsvFileSource(resources = {"/serviceImp-test-data/findAllOrderItemInCart-Data.csv"})
+    void findAllOrderItemInCart(String username, Integer expect) {
         Mockito.when(orderItemDao.queryOneUserShopCart(username)).thenReturn(orderItems);
 
         List<OrderItem> orderItem = orderService.findAllOrderItemInCart(username);
-        assertEquals(expect,orderItem.size());
+        assertEquals(expect, orderItem.size());
     }
-//
+
+    //
     @Test
     void getOneOrder() {
         // 这一步骤也不需要额外的操作，因为orderDao的函数已经被mock了
@@ -224,29 +225,30 @@ class OrderServiceImpTest {
         assertEquals(testOrder.getDestination(), order1.getDestination());
         assertEquals(testOrder.getReceivername(), order1.getReceivername());
     }
-//
-    OrderItem generateRandomOrderItem(){
+
+    //
+    OrderItem generateRandomOrderItem() {
         OrderItem testOrderItem = new OrderItem();
-        testOrderItem.setBuynum((int)(Math.random() * 100));
-        testOrderItem.setBookID(1);
-        testOrderItem.setPayprice((int)(Math.random() * 100));
-        testOrderItem.setOrderID((int)(Math.random() * 100));
+        testOrderItem.setBuynum((int) (Math.random() * 100));
+        testOrderItem.setBookID((int) (Math.random() * 100));
+        testOrderItem.setPayprice((int) (Math.random() * 100));
+        testOrderItem.setOrderID((int) (Math.random() * 100));
         testOrderItem.setBelonguser("user1");
         testOrderItem.setCreate_Itemtime(new Timestamp(System.currentTimeMillis()));
         testOrderItem.setStatus(1);
         return testOrderItem;
     }
 
-    Order generateRandomOrder(){
+    Order generateRandomOrder() {
         Order testOrder = new Order();
-        testOrder.setOrderID((int)(Math.random() * 100));
+        testOrder.setOrderID((int) (Math.random() * 100));
         testOrder.setBelonguser("user1");
         testOrder.setContactphone("12345678910");
         testOrder.setDestination("test");
         testOrder.setReceivername("test");
         testOrder.setPostalcode("123456");
         testOrder.setCreate_time(new Timestamp(System.currentTimeMillis()));
-        testOrder.setTotalprice((int)(Math.random() * 100));
+        testOrder.setTotalprice((int) (Math.random() * 100));
         return testOrder;
     }
 
@@ -313,7 +315,8 @@ class OrderServiceImpTest {
         assertEquals(childJSONArray1.toString(), result.getJSONObject(0).getString("chileItem"));
         assertEquals(childJSONArray2.toString(), result.getJSONObject(1).getString("chileItem"));
     }
-//
+
+    //
     @Test
     void getAllOrderItem() {
         // 创建一个随机的订单项
@@ -371,16 +374,38 @@ class OrderServiceImpTest {
         assertEquals(String.valueOf(testOrderItem1.getBookID()), String.valueOf(result.get(0).getBookID()));
         assertEquals(String.valueOf(testOrderItem2.getBookID()), String.valueOf(result.get(1).getBookID()));
     }
-//
+
+    //
 //        @Test
 //        void getUserOrder() {
 //
 //        }
 //
+
+    /**
+     * by Li
+     */
+    @Test
+    void getUserOrderItemWithBook() throws JsonProcessingException {
+        String username = "user1";
+        int itemNum = 5;
+        List<OrderItem> testOrderItemList = new ArrayList<>(itemNum);
+        for (int i = 0; i < itemNum; i++) {
+            OrderItem item = generateRandomOrderItem();
+            Mockito.when(bookDao.getOneBookByID(item.getBookID())).thenReturn(new Book());
+            testOrderItemList.add(item);
+        }
+        Mockito.when(orderItemDao.getUserOrderItem(username)).thenReturn(testOrderItemList);
+        JSONArray result = orderService.getUserOrderItemWithBook(username);
+        assertEquals(testOrderItemList.size(), result.size());
+        for (int i = 0; i < itemNum; i++) {
+            JSONObject object = result.getJSONObject(i);
+            assertEquals(String.valueOf(testOrderItemList.get(i).getOrderID()), String.valueOf(object.get("orderID")));
+            assertEquals(String.valueOf(testOrderItemList.get(i).getBookID()), String.valueOf(object.get("bookID")));
+            assertEquals(String.valueOf(testOrderItemList.get(i).getBelonguser()), String.valueOf(object.get("belonguser")));
+        }
+    }
 //    @Test
-//    void getUserOrderItemWithBook() {
-//    }
-    //    @Test
 //    void getAllOrderItemWithBook() {
 //
 //    }
