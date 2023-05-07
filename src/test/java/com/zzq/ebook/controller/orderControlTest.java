@@ -317,7 +317,8 @@ public class orderControlTest {
                 mock.when(SessionUtil::getAuth).thenReturn(authJson);
                 if (oc.queryChart(param) == null) {//如果session内的用户名和请求用户名不一致，会返回null
                     assertEquals(expect, actualSize);
-                } else {//如果一致，会返回用户的items，然后检查获取到的ItemList内orderItem的数量是否与预期一致
+                } else {
+                    //如果一致，会返回用户的items，然后检查获取到的ItemList内orderItem的数量是否与预期一致
                     if (sessionJsonUsername == username) {
                         when(orderService.getAllOrderItemWithBook()).thenReturn(testOrderItemList);
                         JSONArray itemList = oc.getAllOrderItem();

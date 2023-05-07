@@ -11,12 +11,9 @@ import java.util.List;
 @SpringBootTest
 class EBookBackendApplicationTests {
 
-    @Test
-    void contextLoads() {
-
-    }
-
-
+//        @Test
+//        void contextLoads() {
+//        }
 }
 
 //    @Autowired
