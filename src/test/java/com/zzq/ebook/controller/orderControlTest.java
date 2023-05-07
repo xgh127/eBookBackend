@@ -7,6 +7,7 @@ import com.zzq.ebook.service.OrderService;
 import com.zzq.ebook.utils.session.SessionUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -131,13 +132,15 @@ public class orderControlTest {
                     when(orderService.editOneOrderItemBUYNUMInChart(username, bookID, buyNum)).thenReturn(-1);
                 } else {
                     when(orderService.editOneOrderItemBUYNUMInChart(username, bookID, buyNum)).thenReturn(0);
-                }
+                } //桩程序
             }
             assertEquals(oc.refreshShopCartItem(param).getStatus(), expect);
         } catch (Exception e) {
             e.printStackTrace();
             fail();
         }
+
+
     }
 
     /**
@@ -332,9 +335,44 @@ public class orderControlTest {
         }
     }
 
+
+    @Test
+    void getAllOrderItem_login(){
+        // 准备测试数据
+        JSONArray testOrderItemList = new JSONArray();
+        for (int i = 0; i < 10; ++i) {
+            testOrderItemList.add(generateRandomOrderItem());
+        }
+        // 模拟SessionUtil.getAuth()的返回值，确保能控制SessionUtil返回给定的值
+        Map<String, String> param = new HashMap<>();
+        int actualSize = 0;
+        param.put("username", "user1");
+        try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+            JSONObject authJson = new JSONObject();
+            authJson.put("username", "user1");
+            authJson.put(constant.PRIVILEGE, 0);
+            mock.when(SessionUtil::getAuth).thenReturn(authJson);
+            when(orderService.getAllOrderItemWithBook()).thenReturn(testOrderItemList);
+            JSONArray itemList = oc.getAllOrderItem();
+            assertEquals(10, itemList.size());
+        }
+
+        try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+            JSONObject authJson = new JSONObject();
+            authJson.put("username", "user1");
+            authJson.put(constant.PRIVILEGE, 1);
+            mock.when(SessionUtil::getAuth).thenReturn(authJson);
+            JSONArray itemList = oc.getAllOrderItem();
+            Assertions.assertNull(itemList);
+        }
+    }
+
+    /**
+     * 测试没有用户登录时，获取用户的订单
+     */
     @ParameterizedTest
     @CsvFileSource(resources = {"/controller-test-data/getAllOrderItem.csv"})
-    void getAllOrder(String sessionJsonUsername, String username, int expect) {
+    void getAllOrder_nologin(String sessionJsonUsername, String username, int expect) {
         // 准备测试数据
         JSONArray testOrderList = new JSONArray();
         for (int i = 0; i < 10; ++i) {
@@ -373,6 +411,44 @@ public class orderControlTest {
         }
     }
 
+    /**
+     * 测试有用户登录时，获取用户的订单
+     */
+    @Test
+    void getAllOrder_login(){
+        // 准备测试数据
+        JSONArray testOrderList = new JSONArray();
+        for (int i = 0; i < 10; ++i) {
+            testOrderList.add(generateRandomOrder());
+        }
+        // 模拟SessionUtil.getAuth()的返回值，确保能控制SessionUtil返回给定的值
+        Map<String, String> param = new HashMap<>();
+        param.put("username", "user1");
+        try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+            JSONObject authJson = new JSONObject();
+            authJson.put("username", "user1");
+            authJson.put(constant.PRIVILEGE, 0);
+            mock.when(SessionUtil::getAuth).thenReturn(authJson);
+            when(orderService.getAllOrder()).thenReturn(testOrderList);
+            JSONArray itemList = oc.getAllOrder();
+            assertEquals(10, itemList.size());
+        }
+
+        try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+            JSONObject authJson = new JSONObject();
+            authJson.put("username", "user2");
+            authJson.put(constant.PRIVILEGE, 3);
+            mock.when(SessionUtil::getAuth).thenReturn(authJson);
+            JSONArray result = oc.getAllOrder();
+            assertNull(result);
+        }
+
+    }
+
+
+    /**
+     * 测试没有用户登录时，获取用户的订单
+     */
     @ParameterizedTest
     @CsvFileSource(resources = {"/controller-test-data/getAllOrderItem.csv"})
     void getUserOrderItem(String sessionJsonUsername, String username, int expect) {
@@ -412,6 +488,33 @@ public class orderControlTest {
             }
         }
     }
+
+    /**
+     * 测试有用户登录时，获取用户的订单
+     */
+    @Test
+    void getUserOrderItem_login(){
+        // 准备测试数据
+        JSONArray testOrderList = new JSONArray();
+//        List<OrderItem> testOrderList = new ArrayList<>();
+        for (int i = 0; i < 10; ++i) {
+            testOrderList.add(generateRandomOrderItem());
+        }
+
+        // 模拟SessionUtil.getAuth()的返回值，确保能控制SessionUtil返回给定的值
+        Map<String, String> param = new HashMap<>();
+        param.put("username", "user1");
+        try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+            JSONObject authJson = new JSONObject();
+            authJson.put("username", "user1");
+            authJson.put(constant.PRIVILEGE, 0);
+            mock.when(SessionUtil::getAuth).thenReturn(authJson);
+            when(orderService.getUserOrderItemWithBook("user1")).thenReturn(testOrderList);
+            JSONArray itemList = oc.getUserOrderItem();
+            assertEquals(10, itemList.size());
+        }
+    }
+
 
     @ParameterizedTest
     @CsvFileSource(resources = {"/controller-test-data/getAllOrderItem.csv"})

@@ -107,6 +107,8 @@ public class bookControllerTest {
         }
     }
 
+
+
     @Test
     public void testGetAllBook(){
         List<Book> bookList = new ArrayList<Book>();
@@ -127,6 +129,11 @@ public class bookControllerTest {
         }
     }
 
+
+    /**
+     * 测试getSearchedBooks 首页book推荐
+     * @Author: zhang ziqian
+     * */
     @Test
     public void testgetSearchedBooks(){
         // 用一个for循环来测试不同的查询参数条件下的返回结果
@@ -149,6 +156,11 @@ public class bookControllerTest {
         }
     }
 
+
+    /**
+     * 测试RequestSignature 用来给图片上传请求签名
+     * @Author: zhang ziqian
+     * */
     @Test
     public void testRequestSignature(){
         Map<String, String> params = new HashMap<>();
@@ -175,6 +187,11 @@ public class bookControllerTest {
 
     }
 
+
+    /**
+     * 测试添加图书
+     * @Author: zhang ziqian
+     * */
     @Test
     public void testAddBook(){
         Map<String, String> params = new HashMap<>();
@@ -208,7 +225,10 @@ public class bookControllerTest {
 
     }
 
-
+    /**
+     * 测试编辑图书
+     * @Author: zhang ziqian
+     * */
     @Test
     public void testEditBook(){
         Map<String, String> params = new HashMap<>();
@@ -241,6 +261,11 @@ public class bookControllerTest {
 
     }
 
+
+    /**
+     * 测试删除图书
+     * @Author: zhang ziqian
+     * */
     @Test
     public void testDeleteBook(){
         Map<String, String> params = new HashMap<>();

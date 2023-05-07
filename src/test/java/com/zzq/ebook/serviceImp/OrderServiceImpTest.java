@@ -134,11 +134,56 @@ class OrderServiceImpTest {
 
     }
 
+
+
+
+
+
     /**
      * 这个函数没有参数，因为函数的参数有一些特殊，所以不从csv文件读取
      */
     @Test
-    void orderMakeFromShopCart() {
+    void orderMakeFromShopCart() throws Exception {
+        int bookIDGroup[] = {1};
+        int bookNumGroup[] = {1};
+        String username = "user1";String receivename = "test";String postcode = "123456";
+        String phonenumber = "12345678910";
+        String receiveaddress = "test";
+
+        // 创建模拟的订单数据，因为读取csv反而不方便
+        Order newOrder = new Order();
+        newOrder.setOrderID(1);newOrder.setBelonguser(username);newOrder.setContactphone(phonenumber);
+        newOrder.setDestination(receiveaddress);newOrder.setReceivername(receivename);
+        newOrder.setPostalcode(postcode);newOrder.setCreate_time(new Timestamp(System.currentTimeMillis()));
+        // 设置总价
+        newOrder.setTotalprice(50);
+
+        OrderItem orderItem = new OrderItem();orderItem.setItemID(1);orderItem.setBookID(1);
+        orderItem.setBuynum(1);orderItem.setOrderID(1);
+
+
+        // mock orderDao.saveOneOrder(newOrder)
+//        Mockito.when(orderDao.saveOneOrder(Mockito.any())).thenReturn(newOrder);
+        Mockito.when(orderDao.saveOneOrder(Mockito.any())).thenReturn(newOrder);
+
+        // orderItemDao.checkUserOrderItemByID mock
+        Mockito.when(orderItemDao.checkUserOrderItemByID(username, bookIDGroup[0])).thenReturn(orderItem);
+
+        // bookDao.getOneBookByID mock
+        Mockito.when(bookDao.getOneBookByID(bookIDGroup[0])).thenReturn(book);
+
+//        // orderItemDao.addOneOrderItem mock
+//        Mockito.when(orderItemDao.addOneOrderItem(orderItem)).thenReturn(orderItem);
+
+
+        Mockito.when(bookDao.saveAllBooks(Mockito.any())).thenReturn(null);
+        Mockito.when(orderItemDao.saveAllOrderItems(Mockito.any())).thenReturn(null);
+
+        //orderDao.getOrderByID
+        Mockito.when(orderDao.getOrderByID(Mockito.anyInt())).thenReturn(newOrder);
+
+
+        orderService.orderMakeFromShopCart(bookIDGroup, bookNumGroup, username, receivename, postcode, phonenumber, receiveaddress, 1);
 
 
     }
@@ -376,10 +421,26 @@ class OrderServiceImpTest {
     }
 
     //
-//        @Test
-//        void getUserOrder() {
-//
-//        }
+        @Test
+        void getUserOrder() {
+            List<Order> allOrder = new ArrayList<>();
+            Order testOrder1 = generateRandomOrder();
+            List<OrderItem > testOrderItemList1 = new ArrayList<>();
+            OrderItem testOrderItem1 = generateRandomOrderItem();
+            testOrderItemList1.add(testOrderItem1);
+            OrderItem testOrderItem2 = generateRandomOrderItem();
+            testOrderItemList1.add(testOrderItem2);
+            testOrder1.setChileItem(testOrderItemList1);
+            allOrder.add(testOrder1);
+
+            // mock orderDao.getUserOrder(username);
+            Mockito.when(orderDao.getUserOrder("testUser")).thenReturn(allOrder);
+            // mock bookDao.getOneBookByID(bookID);
+             Mockito.when(bookDao.getOneBookByID(Mockito.anyInt())).thenReturn(new Book());
+
+            List<Order> result = orderService.getUserOrder("testUser");
+            assertEquals(allOrder.size(), result.size());
+        }
 //
 
     /**
@@ -405,9 +466,25 @@ class OrderServiceImpTest {
             assertEquals(String.valueOf(testOrderItemList.get(i).getBelonguser()), String.valueOf(object.get("belonguser")));
         }
     }
-//    @Test
-//    void getAllOrderItemWithBook() {
-//
-//    }
+    @Test
+    void getAllOrderItemWithBook() {
+        List<OrderItem> testOrderItemList = new ArrayList<>();
+        int itemNum = 5;
+        for (int i = 0; i < itemNum; i++) {
+            OrderItem item = generateRandomOrderItem();
+            Mockito.when(bookDao.getOneBookByID(item.getBookID())).thenReturn(new Book());
+            testOrderItemList.add(item);
+        }
+
+        Mockito.when(orderItemDao.getAllOrderItem()).thenReturn(testOrderItemList);
+        JSONArray result = orderService.getAllOrderItemWithBook();
+        assertEquals(testOrderItemList.size(), result.size());
+        for (int i = 0; i < itemNum; i++) {
+            JSONObject object = result.getJSONObject(i);
+            assertEquals(String.valueOf(testOrderItemList.get(i).getOrderID()), String.valueOf(object.get("orderID")));
+            assertEquals(String.valueOf(testOrderItemList.get(i).getBookID()), String.valueOf(object.get("bookID")));
+            assertEquals(String.valueOf(testOrderItemList.get(i).getBelonguser()), String.valueOf(object.get("belonguser")));
+        }
+    }
 //
 }

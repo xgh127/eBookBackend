@@ -81,12 +81,10 @@ public class orderControl {
 
         // 检查服务层的处理结果
         int result = orderService.editOneOrderItemBUYNUMInChart(username,IDnum,buynum);
-        if(result == 0)
+        if(result >= 0)
             return MsgUtil.makeMsg(MsgCode.SUCCESS,MsgUtil.EDIT_SHOPCART_SUCCESS);
 
-        if(result <= -1)
-            return MsgUtil.makeMsg(MsgCode.ERROR,MsgUtil.EDIT_SHOPCART_FAIL);
-        return null;
+        return MsgUtil.makeMsg(MsgCode.ERROR,MsgUtil.EDIT_SHOPCART_FAIL);
     }
 
     // 函数功能：请求用户自己的购物车信息
@@ -182,11 +180,4 @@ public class orderControl {
         return orderService.getUserOrder(username);
     }
 
-    //  测试的接口函数
-    @RequestMapping("/test")
-    public JSONArray testFunction(){
-        System.out.println("测试开始！！！！！！！！！！");
-
-        return orderService.getAllOrder();
-    }
 }
