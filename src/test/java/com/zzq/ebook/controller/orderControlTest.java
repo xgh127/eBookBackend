@@ -121,6 +121,7 @@ public class orderControlTest {
             authJson.put(constant.USERNAME, sessionJsonUsername);
         }
         try (MockedStatic<SessionUtil> mock = Mockito.mockStatic(SessionUtil.class)) {
+            // getAuth是一个静态方法
             mock.when(SessionUtil::getAuth).thenReturn(authJson);
             if (sessionJsonUsername.equals("null")) {
                 assertThrows(Error.class, () -> oc.refreshShopCartItem(param));
