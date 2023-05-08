@@ -196,11 +196,4 @@ public class statisticControl {
     }
 
 
-
-    @RequestMapping("/statistic/test")
-    public List<Order> test() throws ParseException {
-        return null;
-    }
-
-
 }
